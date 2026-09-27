@@ -9,6 +9,7 @@ const distDir = join(projectRoot, 'dist');
 const STATIC_FILES = [
   'index.html', 'application.html', 'auth.html',
   'profile.html', 'eligibility.html', 'about.html',
+  'test-notification.html',
 ];
 
 const STATIC_DIRS = ['css', 'js', 'images', 'assets'];
