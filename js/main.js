@@ -467,6 +467,12 @@ function initApplicationForm() {
 
     const progressPercent = ((currentStep - 1) / (totalSteps - 1)) * 90;
     if (progressLine) progressLine.style.width = (5 + progressPercent) + '%';
+
+    const track = document.querySelector('.progress-steps');
+    const active = steps[currentStep - 1];
+    if (track && active && track.scrollWidth > track.clientWidth) {
+      track.scrollTo({ left: active.offsetLeft - track.offsetLeft - (track.clientWidth - active.clientWidth) / 2, behavior: 'smooth' });
+    }
   }
 
   function showStep(step) {

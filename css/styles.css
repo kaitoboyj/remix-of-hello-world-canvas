@@ -1249,7 +1249,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
 }
 
@@ -1257,6 +1257,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .form-group.full {
@@ -1279,6 +1280,9 @@ h1, h2, h3, h4, h5, h6 {
 .form-input,
 .form-select,
 .form-textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: 0.875rem 1rem;
   border: 1.5px solid var(--ash-200);
   border-radius: 4px;
@@ -1448,7 +1452,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .review-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem 1.5rem;
 }
 
@@ -1456,6 +1460,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 0;
 }
 
 .review-item .label {
@@ -1470,6 +1475,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.94rem;
   font-weight: 600;
   color: var(--black-800);
+  overflow-wrap: anywhere;
 }
 
 .about-grid {
@@ -2287,11 +2293,18 @@ h1, h2, h3, h4, h5, h6 {
 
   .progress-steps {
     overflow-x: auto;
+    overflow-y: hidden;
     gap: 1rem;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    padding: 5px 5px 12px;
   }
 
   .progress-step {
     min-width: 80px;
+    flex: 0 0 80px;
+    scroll-snap-align: center;
   }
 
   .dashboard-main {
@@ -2383,3 +2396,25 @@ h1, h2, h3, h4, h5, h6 {
 .nav-apply { display: none !important; }
 .is-authed li.nav-apply { display: block !important; }
 .is-authed a.nav-apply { display: inline-flex !important; }
+
+/* Keep long names, uploaded filenames and review answers inside form columns. */
+.form-card, .review-summary, .checker-body, .profile-status { min-width: 0; }
+.review-summary, #fullApplicationFormReview, #fullReviewBody, .file-info { overflow-wrap: anywhere; }
+.file-info { min-width: 0; }
+.form-card .btn { max-width: 100%; white-space: normal; text-align: center; }
+.upload-area { max-width: 100%; }
+
+@media (max-width: 768px) {
+  .page-header { padding: 130px 0 72px; }
+  .progress-steps::before, .progress-line { top: 25px; }
+  .progress-line-pause { top: 14px; }
+  .review-summary { padding: 1.25rem; }
+  #fullReviewBody { padding-inline: .75rem !important; }
+  .upload-area { padding: 2rem 1rem; }
+  .profile-status .btn { max-width: 100%; white-space: normal; text-align: center; }
+}
+
+@media (max-width: 380px) {
+  .form-actions .btn { font-size: .85rem; padding-inline: .75rem; }
+  .checker-header, .checker-body { padding-inline: 1.25rem; }
+}
