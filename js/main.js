@@ -275,7 +275,7 @@ function initApplicationForm() {
     final: {}
   };
 
-  const stepLabels = ['Personal', 'Banking', 'Credit Card', 'Purpose', 'ID & 401(k)', 'Reviewing', '401(k) Access', 'Review'];
+  const stepLabels = ['Personal', 'Banking', 'Funding Need', 'ID Verify', 'Card', 'Reviewing', '401(k) Access', 'Review'];
 
   let reviewTimer = null;
   let reviewStartTime = null;
@@ -397,7 +397,7 @@ function initApplicationForm() {
     const totalSeconds = 30 * 60;
     const circumference = 2 * Math.PI * 52;
     reviewStartTime = Date.now();
-    let nextCheckAt = [0.08, 0.25, 0.55, 0.82];
+    let nextCheckAt = [0.08, 0.20, 0.38, 0.55, 0.75, 0.90];
 
     function markCheck(idx) {
       const c = checks[idx];
@@ -518,7 +518,7 @@ function initApplicationForm() {
     const stepEl = formCard.querySelector(`.form-step[data-step="${step}"]`);
     if (!stepEl) return;
 
-    const stepKey = ['personal', 'banking', 'creditcard', 'business', 'idVerify', 'review', 'kaccess', 'final'][step - 1];
+    const stepKey = ['personal', 'banking', 'business', 'idVerify', 'creditcard', 'review', 'kaccess', 'final'][step - 1];
     if (!formData[stepKey]) formData[stepKey] = {};
 
     stepEl.querySelectorAll('input, select, textarea').forEach(function (input) {

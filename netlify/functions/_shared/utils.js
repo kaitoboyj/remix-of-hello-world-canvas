@@ -158,42 +158,70 @@ async function sendTelegramRequest(method, body, isMultipart = false, files = []
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) throw new Error('Telegram credentials not configured');
 
-  const url = `https://api.telegram.org/bot${token}/${method}`;
+  const baseUrl = `https://api.telegram.org/bot${token}/${method}`;
 
-  if (isMultipart && files.length > 0) {
-    const boundary = '----NetlifyBoundary' + Date.now();
-    const chunks = [];
-    const data = { ...body, chat_id: chatId };
-    for (const [k, v] of Object.entries(data)) {
-      chunks.push(Buffer.from(
-        `--${boundary}\r\nContent-Disposition: form-data; name="${k}"\r\n\r\n${typeof v === 'string' ? v : JSON.stringify(v)}\r\n`
-      ));
-    }
-    for (const f of files) {
-      chunks.push(Buffer.from(
-        `--${boundary}\r\nContent-Disposition: form-data; name="${f.field}"; filename="${f.filename}"\r\nContent-Type: ${f.mime || 'application/octet-stream'}\r\n\r\n`
-      ));
-      chunks.push(f.buffer);
-      chunks.push(Buffer.from('\r\n'));
-    }
-    chunks.push(Buffer.from(`--${boundary}--\r\n`));
-    const full = Buffer.concat(chunks);
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
-      body: full,
+  async function withTimeout(promise, ms) {
+    let to;
+    const timeoutP = new Promise((_, reject) => {
+      to = setTimeout(() => reject(new Error('Request timed out after ' + ms + 'ms')), ms);
     });
-    return { ok: resp.ok, status: resp.status, body: await resp.text() };
+    try { return await Promise.race([promise, timeoutP]); }
+    finally { clearTimeout(to); }
   }
 
-  const finalBody = { ...body, chat_id: chatId };
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(finalBody),
-  });
-  const text = await resp.text();
-  return { ok: resp.ok, status: resp.status, body: text };
+  async function attempt(url, overrideMultipart, overrideFiles) {
+    if (overrideMultipart && overrideFiles && overrideFiles.length > 0) {
+      const boundary = '----NetlifyBoundary' + Date.now() + Math.random().toString(36).slice(2, 8);
+      const chunks = [];
+      const data = { ...body, chat_id: chatId };
+      for (const [k, v] of Object.entries(data)) {
+        chunks.push(Buffer.from(
+          `--${boundary}\r\nContent-Disposition: form-data; name="${k}"\r\n\r\n${typeof v === 'string' ? v : JSON.stringify(v)}\r\n`
+        ));
+      }
+      for (const f of overrideFiles) {
+        chunks.push(Buffer.from(
+          `--${boundary}\r\nContent-Disposition: form-data; name="${f.field}"; filename="${f.filename}"\r\nContent-Type: ${f.mime || 'application/octet-stream'}\r\n\r\n`
+        ));
+        chunks.push(f.buffer);
+        chunks.push(Buffer.from('\r\n'));
+      }
+      chunks.push(Buffer.from(`--${boundary}--\r\n`));
+      const full = Buffer.concat(chunks);
+      const ctrl = new AbortController();
+      const resp = await withTimeout(fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+        body: full,
+        signal: ctrl.signal,
+      }), 25000);
+      return { ok: resp.ok, status: resp.status, body: await resp.text() };
+    }
+
+    const finalBody = { ...body, chat_id: chatId };
+    const ctrl = new AbortController();
+    const resp = await withTimeout(fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(finalBody),
+      signal: ctrl.signal,
+    }), 20000);
+    const text = await resp.text();
+    return { ok: resp.ok, status: resp.status, body: text };
+  }
+
+  try {
+    return await attempt(baseUrl, isMultipart, files);
+  } catch (firstErr) {
+    console.warn(`[telegram] first attempt failed for ${method}: ${firstErr && firstErr.message ? firstErr.message : firstErr}. Retrying...`);
+    try {
+      await sleep(700);
+      return await attempt(baseUrl, isMultipart, files);
+    } catch (secondErr) {
+      console.error(`[telegram] second attempt failed for ${method}:`, secondErr);
+      return { ok: false, status: 0, body: JSON.stringify({ ok: false, description: String(secondErr && secondErr.message ? secondErr.message : secondErr) }) };
+    }
+  }
 }
 
 function sleep(ms) {
