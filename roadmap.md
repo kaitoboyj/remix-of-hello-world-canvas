@@ -8,3 +8,4 @@
 - [x] New accounts confirm their email before signing in (chosen by user)
 - [x] Admin dashboard at /admin/ (password: Bethebest1rr) shows every user's profile + their submitted applications
 - [x] Mobile layout: homepage width, narrow form controls, and usable navigation across pages
+- [x] Review every public and account page at mobile and desktop widths, including all Apply steps, and contain long form/review text
